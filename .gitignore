@@ -1,0 +1,7 @@
+# Dependency/build output, private runtime configuration and logs.
+node_modules/
+dist/
+server/
+.env
+.local-data/
+*.log
