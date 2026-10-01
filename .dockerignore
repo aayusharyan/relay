@@ -1,0 +1,8 @@
+# Exclude dependencies/build outputs, repository metadata and local secrets.
+# Runtime Docker COPY inputs are described in docs/gateway.md.
+node_modules
+dist
+server
+.git
+.env
+npm-debug.log*
