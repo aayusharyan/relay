@@ -1,5 +1,5 @@
 /** Authoritative call and message controller for every connected dashboard.
- * It owns Asterisk operations, first-answer arbitration, and persisted outcomes. */
+ * Coordinates Asterisk, browser commands, media bridging, and persistence hooks. */
 import { EventEmitter } from "node:events";
 import { randomUUID } from "node:crypto";
 import type { AmiClient } from "./amiClient.js";
@@ -20,6 +20,7 @@ export interface CallSnapshot {
   answeredAt?: string;
 }
 
+/** Shared call history record returned to browsers and broadcast on create. */
 export interface CallRecord {
   id: string;
   peer: string;
@@ -30,6 +31,7 @@ export interface CallRecord {
   outcome?: "answered" | "declined" | "missed" | "handled";
 }
 
+/** Shared message record returned to browsers and broadcast on create. */
 export interface MessageRecord {
   id: string;
   peer: string;
@@ -37,6 +39,14 @@ export interface MessageRecord {
   direction: "in" | "out";
   time: string;
   status: "sent" | "failed";
+}
+
+/** Shared favourite returned to browsers and broadcast on create. */
+export interface FavoriteRecord {
+  id: string;
+  peer: string;
+  name?: string;
+  position: number;
 }
 
 interface ActiveCall {
