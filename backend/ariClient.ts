@@ -7,7 +7,7 @@ export interface AriEvent {
   type: string;
   application?: string;
   args?: string[];
-  channel?: { id: string; name: string; state: string; caller?: { number?: string } };
+  channel?: { id: string; name: string; state: string; caller?: { name?: string; number?: string } };
   bridge?: { id: string };
 }
 
