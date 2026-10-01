@@ -92,16 +92,22 @@ export class AriClient extends EventEmitter {
     return this.request("POST", `/channels/${encodeURIComponent(channelId)}/ring`);
   }
 
-  /** Hang up a channel; a missing channel is harmless during idempotent teardown. */
-  async hangup(channelId: string) {
+  /** Hang up a channel; optional ARI reason (for example busy) maps to the SIP cause.
+   * A missing channel is harmless during idempotent teardown. */
+  async hangup(channelId: string, reason?: string) {
     try {
-      await this.request("DELETE", `/channels/${encodeURIComponent(channelId)}`);
+      await this.request("DELETE", `/channels/${encodeURIComponent(channelId)}`, reason ? { reason } : {});
     } catch (error) {
       if (!String(error).includes("404")) throw error;
     }
   }
 
-  /** Create an upstream Stasis channel, then dial it so early media stays controllable. */
+  /** Set a channel variable or writable dialplan function such as GROUP(). */
+  setVariable(channelId: string, variable: string, value: string) {
+    return this.request("POST", `/channels/${encodeURIComponent(channelId)}/variable`, { variable, value });
+  }
+
+  /** Create an upstream Stasis channel, mark it in the single-call group, then dial. */
   async originate(endpoint: string, channelId: string, appArgs: string) {
     const channel = await this.request<AriChannel>("POST", "/channels/create", {
       endpoint,
@@ -109,6 +115,8 @@ export class AriClient extends EventEmitter {
       app: this.app,
       appArgs
     });
+    // Same group the dialplan checks so inbound Busy() works during an outbound call.
+    await this.setVariable(channelId, "GROUP(activecall)", "1");
     await this.request("POST", `/channels/${encodeURIComponent(channelId)}/dial`, { timeout: 60 });
     return channel;
   }
