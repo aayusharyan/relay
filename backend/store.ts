@@ -211,12 +211,12 @@ export class Store {
     this.database.prepare(`
       INSERT INTO favorites (id, peer, name, position) VALUES (?, ?, ?, ?)
     `).run(favorite.id, favorite.peer, favorite.name ?? null, position);
-    return this.mapFavorite({
+    return {
       id: favorite.id,
       peer: favorite.peer,
-      name: favorite.name ?? null,
+      ...(favorite.name ? { name: favorite.name } : {}),
       position
-    });
+    };
   }
 
   /** Map one SQLite favourite row into the shared FavoriteRecord shape. */
