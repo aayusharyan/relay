@@ -1,0 +1,49 @@
+Third-party notices
+
+The Software in this repository is licensed under the MIT License in LICENSE.
+The file below is not MIT-licensed. It is shipped in source and in the
+Docker image so builds of this End Product stay bit-for-bit verifiable.
+
+Envato Elements - ringtone audio
+
+Files:
+
+- frontend/assets/ringtone.mp3
+
+This audio item was obtained from Envato Elements and remains the property of
+its authors / Envato. It is used here under an Envato Elements license
+held by the project author for this single End Product (Relay), including
+the corresponding container image built from this tree.
+
+It is not covered by the MIT License. MIT grants in LICENSE do not apply to
+it. You do not receive Envato Elements rights by cloning this repository or
+pulling the image.
+
+You may:
+
+- Build and run this End Product from this source tree, including this file
+  as an embedded ringtone asset of Relay.
+- Inspect the file so the container contents stay source-verifiable.
+
+You may not:
+
+- Treat this file as MIT, stock, template, or freely redistributable media.
+- Extract it for use in another project, product, template, or media pack.
+- Re-license, re-upload, or redistribute it as a standalone asset.
+- Claim ownership of the item.
+
+If you fork or redistribute a modified product that still needs a ringtone,
+replace this file with audio you are licensed to use, or obtain your own
+Envato Elements license(s) for your own End Product and register that use with
+Envato as required by their terms.
+
+Upstream terms:
+
+- https://elements.envato.com/license-terms
+- https://help.elements.envato.com/hc/en-us/articles/360000628966-Envato-Elements-License
+- https://help.elements.envato.com/hc/en-us/articles/360000621803-Prohibited-Usage-of-Envato-Items
+
+Other third-party software
+
+npm dependencies and OS packages in the image keep their own licenses. This
+notice only covers the Envato-sourced ringtone file listed above.
