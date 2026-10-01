@@ -14,6 +14,7 @@ export interface CallSnapshot {
   callId?: string;
   direction?: "incoming" | "outgoing";
   peer?: string;
+  name?: string;
   owned?: boolean;
   startedAt?: string;
   answeredAt?: string;
@@ -22,6 +23,7 @@ export interface CallSnapshot {
 export interface CallRecord {
   id: string;
   peer: string;
+  name?: string;
   direction: "in" | "out" | "missed";
   time: string;
   duration?: number;
@@ -42,6 +44,7 @@ interface ActiveCall {
   phase: Exclude<CallPhase, "idle" | "ended">;
   direction: "incoming" | "outgoing";
   peer: string;
+  name?: string;
   startedAt: number;
   answeredAt?: number;
   upstreamChannelId: string;
@@ -57,7 +60,7 @@ interface ActiveCall {
 interface ControllerHooks {
   saveCall: (record: CallRecord) => Promise<void>;
   saveMessage: (record: MessageRecord) => Promise<void>;
-  pushIncoming: (peer: string) => Promise<void>;
+  pushIncoming: (peer: string, name?: string) => Promise<void>;
   pushEnded: () => Promise<void>;
 }
 
@@ -83,7 +86,7 @@ export class CallController extends EventEmitter {
     this.ami.start();
   }
 
-  /** Return a client-specific view without exposing another browser's identity. */
+  /** Mark owned=true only for this clientId; omit foreign owner ids. */
   snapshot(clientId?: string): CallSnapshot {
     if (!this.call) return { phase: "idle" };
     return {
@@ -91,6 +94,7 @@ export class CallController extends EventEmitter {
       callId: this.call.id,
       direction: this.call.direction,
       peer: this.call.peer,
+      name: this.call.name,
       owned: Boolean(clientId && this.call.ownerId === clientId),
       startedAt: new Date(this.call.startedAt).toISOString(),
       answeredAt: this.call.answeredAt ? new Date(this.call.answeredAt).toISOString() : undefined
@@ -133,11 +137,14 @@ export class CallController extends EventEmitter {
           return;
         }
         const peer = suppliedId || event.channel?.caller?.number || "Unknown";
+        // Trust upstream CALLERID(name) verbatim; consumers decide how to truncate for display.
+        const name = event.channel?.caller?.name || undefined;
         this.call = {
           id: channelId,
           phase: "incoming",
           direction: "incoming",
           peer,
+          name,
           startedAt: Date.now(),
           upstreamChannelId: channelId,
           dismissed: new Set(),
@@ -145,7 +152,7 @@ export class CallController extends EventEmitter {
         };
         await this.ari.ring(channelId).catch(() => {});
         this.broadcastState();
-        await this.hooks.pushIncoming(peer);
+        await this.hooks.pushIncoming(peer, name);
       } else if (kind === "outbound" && this.call?.id === suppliedId) {
         this.call.upstreamChannelId = channelId;
         if (suppliedPeer) this.call.peer = suppliedPeer;
@@ -333,6 +340,7 @@ export class CallController extends EventEmitter {
     const record: CallRecord = {
       id: `gateway-${call.id}`,
       peer: call.peer,
+      name: call.name,
       direction: call.direction === "outgoing" ? "out" : outcome === "missed" ? "missed" : "in",
       time: new Date(call.startedAt).toISOString(),
       outcome,
@@ -340,7 +348,7 @@ export class CallController extends EventEmitter {
     };
     this.call = null;
     await this.hooks.saveCall(record);
-    this.emit("broadcast", { type: "state", call: { phase: "ended", callId: call.id, peer: call.peer, direction: call.direction } });
+    this.emit("broadcast", { type: "state", call: { phase: "ended", callId: call.id, peer: call.peer, name: call.name, direction: call.direction } });
     this.emit("broadcast", { type: "state", call: { phase: "idle" } });
     await this.hooks.pushEnded();
   }
