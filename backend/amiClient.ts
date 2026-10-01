@@ -1,5 +1,4 @@
-/** Small Asterisk Manager Interface client for SIP MESSAGE send/receive.
- * It intentionally implements only login, correlated actions, and UserEvent parsing. */
+/** Small Asterisk Manager Interface client for login, correlated actions, and UserEvent parsing (SIP MESSAGE). */
 import { EventEmitter } from "node:events";
 import net from "node:net";
 import { randomUUID } from "node:crypto";
